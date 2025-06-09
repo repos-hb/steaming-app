@@ -20,4 +20,7 @@ public interface VideoService {
 
     // get all video as list
     List<Video> getAllVideo();
+
+    // video transcoding
+    void processVideo(String id);
 }

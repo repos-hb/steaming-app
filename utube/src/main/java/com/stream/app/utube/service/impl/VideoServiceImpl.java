@@ -27,6 +27,9 @@ public class VideoServiceImpl implements VideoService {
     @Value("${path.upload}")
     private String uploadPath;
 
+    @Value("${path.upload.hls}")
+    private String uploadPathHls;
+
     private final VideoRepository videoRepository;
 
     /**
@@ -42,6 +45,12 @@ public class VideoServiceImpl implements VideoService {
             log.info("Upload path created");
         } else {
             log.info("Upload path exists");
+        }
+
+        try {
+            Files.createDirectories(Path.of(uploadPathHls));
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -83,11 +92,34 @@ public class VideoServiceImpl implements VideoService {
 
     @Override
     public Video getVideoByTitle(String title) {
-        return null;
+        return videoRepository.findByTitle(title).orElseThrow(() -> new RuntimeException("video not found"));
     }
 
     @Override
     public List<Video> getAllVideo() {
         return videoRepository.findAll();
+    }
+
+    @Override
+    public void processVideo(String id) {
+        // get file path for processing
+        Video video = this.getVideo(id);
+        Path filePath = Paths.get(video.getFilePath());
+
+        // create directories for segmentation
+        String output360p = uploadPathHls.concat(id).concat("/360p");
+        String output720p = uploadPathHls.concat(id).concat("/720p");
+        String output1080p = uploadPathHls.concat(id).concat("/1080p");
+
+        try {
+            Files.createDirectories(Path.of(output360p));
+            Files.createDirectories(Path.of(output720p));
+            Files.createDirectories(Path.of(output1080p));
+
+            // ffmpeg command
+            StringBuilder ffmpegCommand = new StringBuilder();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
